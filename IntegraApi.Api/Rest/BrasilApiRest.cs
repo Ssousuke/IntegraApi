@@ -2,7 +2,6 @@
 using IntegraApi.Api.Interfaces;
 using IntegraApi.Api.Models;
 using System.Dynamic;
-using System.Net.Http;
 using System.Text.Json;
 
 namespace IntegraApi.Api.Rest
@@ -34,14 +33,54 @@ namespace IntegraApi.Api.Rest
             return response;
         }
 
-        public Task<ResponseGeneric<List<BancoModel>>> GetAllBanco()
+        public async Task<ResponseGeneric<IEnumerable<BancoModel>>> GetAllBanco()
         {
-            throw new NotImplementedException();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "https://brasilapi.com.br/api/banks/v1");
+            ResponseGeneric<IEnumerable<BancoModel>> response = new ResponseGeneric<IEnumerable<BancoModel>>();
+
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage responseBrasilApi = await client.SendAsync(request);
+                string contentResponse = await responseBrasilApi.Content.ReadAsStringAsync();
+                IEnumerable<BancoModel>? json = JsonSerializer.Deserialize<IEnumerable<BancoModel>>(contentResponse);
+
+                if (responseBrasilApi.IsSuccessStatusCode)
+                {
+                    response.StatusCode = responseBrasilApi.StatusCode;
+                    response.ResponseData = json;
+                }
+                else
+                {
+                    response.StatusCode = responseBrasilApi.StatusCode;
+                    response.ReturnError = JsonSerializer.Deserialize<ExpandoObject>(contentResponse);
+                }
+            }
+            return response;
         }
 
-        public Task<ResponseGeneric<BancoModel>> GetBanco(string cod)
+        public async Task<ResponseGeneric<BancoModel>> GetBanco(string cod)
         {
-            throw new NotImplementedException();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"https://brasilapi.com.br/api/banks/v1/{cod}");
+            ResponseGeneric<BancoModel> response = new ResponseGeneric<BancoModel>();
+
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage responseBrasilApi = await client.SendAsync(request);
+                string contentResponse = await responseBrasilApi.Content.ReadAsStringAsync();
+                BancoModel? json = JsonSerializer.Deserialize<BancoModel>(contentResponse);
+
+                if (responseBrasilApi.IsSuccessStatusCode)
+                {
+                    response.StatusCode = responseBrasilApi.StatusCode;
+                    response.ResponseData = json;
+                }
+                else
+                {
+                    response.StatusCode = responseBrasilApi.StatusCode;
+                    response.ReturnError = JsonSerializer.Deserialize<ExpandoObject>(contentResponse);
+                }
+            }
+            return response;
         }
     }
 }
